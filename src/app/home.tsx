@@ -8,6 +8,7 @@ import { mat4 } from "gl-matrix";
 import Camera from "@/app/_lib/camera.ts";
 import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
+import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,6 +16,14 @@ export default function Home() {
   const animationRequestRef = useRef<number | null>(null);
 
   const shaderProgramRef = useRef<WebGLProgram | null>(null);
+
+  const [selectedMeshIndex, setSelectedMeshIndex] = useState<number | null>(
+    null,
+  );
+
+  const isMouseDownRef = useRef<boolean>(false);
+  const lastMouseXRef = useRef<number>(0);
+  const lastMouseYRef = useRef<number>(0);
 
   const [webGLContext, setWebGLContext] =
     useState<WebGL2RenderingContext | null>(null);
@@ -245,8 +254,56 @@ export default function Home() {
     };
   }, [render]);
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const index = onKeyDownFn(e, transformations, selectedMeshIndex, camera);
+
+      setSelectedMeshIndex(index);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isMouseDownRef.current) return;
+
+      const deltaX = e.clientX - lastMouseXRef.current;
+      const deltaY = e.clientY - lastMouseYRef.current;
+
+      lastMouseXRef.current = e.clientX;
+      lastMouseYRef.current = e.clientY;
+
+      camera.rotate(deltaY * 0.001, deltaX * 0.001);
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      isMouseDownRef.current = true;
+      lastMouseXRef.current = e.clientX;
+      lastMouseYRef.current = e.clientY;
+    };
+
+    const onMouseUp = () => {
+      isMouseDownRef.current = false;
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+    };
+  }, [camera, selectedMeshIndex, transformations]);
+
   return (
     <div>
+      {selectedMeshIndex !== null && (
+        <p className="absolute top-4 left-4">
+          {models[selectedMeshIndex].name}
+        </p>
+      )}
+
       <canvas ref={canvasRef} className="h-full w-full"></canvas>
     </div>
   );
