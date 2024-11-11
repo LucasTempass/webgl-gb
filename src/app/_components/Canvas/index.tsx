@@ -12,9 +12,10 @@ import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
 
 interface CanvasProps {
   file: string;
+  onReset: () => void;
 }
 
-export default function Canvas({ file }: CanvasProps) {
+export default function Canvas({ onReset, file }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const animationRequestRef = useRef<number | null>(null);
@@ -304,6 +305,13 @@ export default function Canvas({ file }: CanvasProps) {
           {models[selectedMeshIndex].name}
         </p>
       )}
+
+      <button
+        onClick={onReset}
+        className="font-bold text-xl absolute top-4 right-8 text-white"
+      >
+        X
+      </button>
 
       <canvas ref={canvasRef} className="h-full w-full"></canvas>
     </div>

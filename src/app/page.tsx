@@ -44,7 +44,7 @@ export default function Page() {
 
   return (
     <div>
-      <CanvasLazy file={fileContent} />
+      <CanvasLazy file={fileContent} onReset={() => setFileContent(null)} />
     </div>
   );
 }
