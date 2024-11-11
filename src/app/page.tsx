@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 
-const HomeLazy = dynamic(() => import("@/app/home.tsx"), {
+const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
   ssr: false,
 });
 
 export default function Page() {
-  return <HomeLazy />;
+  return <CanvasLazy />;
 }

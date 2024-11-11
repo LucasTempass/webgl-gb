@@ -10,7 +10,7 @@ import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
 
-export default function Home() {
+export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const animationRequestRef = useRef<number | null>(null);
