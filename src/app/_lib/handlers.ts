@@ -9,7 +9,7 @@ export function onKeyDown(
   camera: Camera,
 ): number | null {
   const transformation: Transformation | null =
-    index == null ? null : meshes[index].transformation;
+    index == null ? null : (meshes[index]?.transformation ?? null);
 
   if (!transformation) {
     updateCamera(event, camera);
