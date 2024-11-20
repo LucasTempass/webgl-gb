@@ -106,10 +106,10 @@ export default function Canvas({
 
       gl.useProgram(shaderProgram);
 
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), 0.2);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), 0.5);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), 0.5);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), 5.0);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), 0.7);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), 0.7);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), 0.7);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), 0.7);
 
       const lightPositionLocation = gl.getUniformLocation(
         shaderProgram,
@@ -132,11 +132,9 @@ export default function Canvas({
 
       gl.enable(gl.DEPTH_TEST);
 
-      // Load and bind texture
       const texture = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, texture);
 
-      // Set the parameters so we can render any size image
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
