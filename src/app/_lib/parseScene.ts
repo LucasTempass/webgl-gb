@@ -2,17 +2,17 @@ import { schema } from "@/app/_lib/schema.ts";
 import { parseFile } from "@/app/_lib/utils/files.ts";
 
 export interface Scene {
-  objects: FileSystemFileHandle[];
+  cameraPosition: [number, number, number];
+  objects: string[];
 }
 
 export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
   const indexFile = list.find((v) => v.name === "index.json");
 
-  // Diretório não possui arquivo index.json. Por favor, selecione outro diretório.
   if (!indexFile) {
-    return {
-      objects: [],
-    };
+    throw new Error(
+      "Diretório não possui uma cena válida. Por favor, selecione outro diretório.",
+    );
   }
 
   const scene = schema.parse(JSON.parse(await parseFile(indexFile)));
@@ -21,7 +21,12 @@ export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
     scene.objects.some((o) => v.name === o.file),
   );
 
+  const objectsFilesContent = await Promise.all(
+    objectsFiles.map((v) => parseFile(v)),
+  );
+
   return {
-    objects: objectsFiles,
+    cameraPosition: scene.camera.position,
+    objects: objectsFilesContent,
   };
 }

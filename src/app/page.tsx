@@ -5,31 +5,41 @@ import { useMemo, useState } from "react";
 import { ScenePicker } from "@/app/_components/ScenePicker";
 import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
+import { Scene } from "@/app/_lib/parseScene.ts";
 
 const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
   ssr: false,
 });
 
 export default function Page() {
-  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [scene, setScene] = useState<Scene | null>(null);
 
   const models = useMemo(() => {
-    if (!fileContent) return [];
-    return parseSimpleObjects(fileContent);
-  }, [fileContent]);
+    if (!scene) return [];
+
+    const object = scene.objects[0];
+
+    if (!object) return [];
+
+    return parseSimpleObjects(object);
+  }, [scene]);
 
   const meshes: Mesh[] = useMemo(
     () => models.map((model) => new Mesh(model)),
     [models],
   );
 
-  if (!fileContent) {
-    return <ScenePicker onChange={(v) => setFileContent(v)} />;
+  if (!scene) {
+    return <ScenePicker onChange={(v) => setScene(v)} />;
   }
 
   return (
     <div>
-      <CanvasLazy meshes={meshes} onReset={() => setFileContent(null)} />
+      <CanvasLazy
+        onReset={() => setScene(null)}
+        cameraPosition={scene.cameraPosition}
+        meshes={meshes}
+      />
     </div>
   );
 }

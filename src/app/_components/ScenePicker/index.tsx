@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { listFiles, parseFile } from "@/app/_lib/utils/files.ts";
-import { parseScene } from "@/app/_lib/parseScene.ts";
+import { parseScene, Scene } from "@/app/_lib/parseScene.ts";
 
 interface ScenePickerProps {
-  onChange: (content: string | null) => void;
+  onChange: (content: Scene) => void;
 }
 
 export function ScenePicker({ onChange }: ScenePickerProps) {
@@ -19,18 +19,9 @@ export function ScenePicker({ onChange }: ScenePickerProps) {
 
     const list = await listFiles(directoryHandle);
 
-    const { objects } = await parseScene(list);
+    const scene = await parseScene(list);
 
-    const objFile = objects[0];
-
-    if (!objFile) {
-      setError(
-        "Diretório não possui uma cena válida. Por favor, selecione outro diretório.",
-      );
-      return;
-    }
-
-    onChange(await parseFile(objFile));
+    onChange(scene);
   };
 
   const handlePickDir = async () => {

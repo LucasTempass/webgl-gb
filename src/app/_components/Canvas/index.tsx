@@ -13,9 +13,14 @@ import { loadImage } from "@/app/_lib/loadImage.ts";
 interface CanvasProps {
   meshes: Mesh[];
   onReset: () => void;
+  cameraPosition: [number, number, number];
 }
 
-export default function Canvas({ onReset, meshes }: CanvasProps) {
+export default function Canvas({
+  onReset,
+  meshes,
+  cameraPosition,
+}: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const animationRequestRef = useRef<number | null>(null);
@@ -33,7 +38,7 @@ export default function Canvas({ onReset, meshes }: CanvasProps) {
   const [webGLContext, setWebGLContext] =
     useState<WebGL2RenderingContext | null>(null);
 
-  const camera = useMemo(() => new Camera(), []);
+  const camera = useMemo(() => new Camera(cameraPosition), [cameraPosition]);
 
   const transformations = useMemo(() => {
     return meshes.map(() => ({
