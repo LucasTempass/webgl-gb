@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { listFiles, parseFile } from "@/app/_lib/utils/files.ts";
+import { listFiles } from "@/app/_lib/utils/files.ts";
 import { parseScene, Scene } from "@/app/_lib/parseScene.ts";
 
 interface ScenePickerProps {

@@ -6,6 +6,7 @@ import { ScenePicker } from "@/app/_components/ScenePicker";
 import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { Scene } from "@/app/_lib/parseScene.ts";
+import { ObjModel } from "obj-file-parser";
 
 const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
   ssr: false,
@@ -14,14 +15,14 @@ const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
 export default function Page() {
   const [scene, setScene] = useState<Scene | null>(null);
 
-  const models = useMemo(() => {
+  const models: ObjModel[] = useMemo(() => {
     if (!scene) return [];
 
-    const object = scene.objects[0];
+    const models: ObjModel[][] = scene.objects.map((v) =>
+      parseSimpleObjects(v),
+    );
 
-    if (!object) return [];
-
-    return parseSimpleObjects(object);
+    return models.flat();
   }, [scene]);
 
   const meshes: Mesh[] = useMemo(
