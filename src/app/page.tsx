@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { parseFile, listFiles } from "@/app/_lib/utils/files.ts";
+import { parseScene } from "@/app/_lib/parseScene.ts";
 
 const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
   ssr: false,
@@ -9,6 +11,8 @@ const CanvasLazy = dynamic(() => import("@/app/_components/Canvas"), {
 
 export default function Page() {
   const [fileContent, setFileContent] = useState<string | null>(null);
+
+  const [files, setFiles] = useState<FileSystemFileHandle[] | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -18,31 +22,21 @@ export default function Page() {
   const handleClick = async () => {
     if (!directoryHandle) return;
 
-    const values = directoryHandle.values();
+    const list = await listFiles(directoryHandle);
 
-    const list: FileSystemFileHandle[] = [];
+    const { objects } = await parseScene(list);
 
-    for await (const value of values) {
-      if (value.kind === "file") {
-        list.push(value);
-      }
-    }
+    const objFile = objects[0];
 
-    const indexFile = list.find((v) => v.name === "index.json");
-
-    if (!indexFile) {
-      setError(
-        "Diretório não possui arquivo index.json. Por favor, selecione outro diretório.",
+    if (!objFile) {
+      throw new Error(
+        "Diretório não possui arquivo .obj. Por favor, selecione outro diretório.",
       );
-
-      setDirectoryHandle(null);
-
-      return;
     }
 
-    const contents = list.map((v) => v.name).join(", ");
+    setFileContent(await parseFile(objFile));
 
-    console.log(contents);
+    setFiles(list);
   };
 
   if (!fileContent) {
