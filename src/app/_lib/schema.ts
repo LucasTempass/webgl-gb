@@ -27,6 +27,9 @@ export const schema = z.object({
   camera: z.object({
     position: z.tuple([z.number(), z.number(), z.number()]),
   }),
+  light: z.object({
+    position: z.tuple([z.number(), z.number(), z.number()]),
+  }),
 });
 
 export type SceneSchema = z.infer<typeof schema>;

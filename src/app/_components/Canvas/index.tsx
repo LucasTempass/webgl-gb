@@ -14,12 +14,14 @@ interface CanvasProps {
   meshes: Mesh[];
   onReset: () => void;
   cameraPosition: [number, number, number];
+  lightPosition: [number, number, number];
 }
 
 export default function Canvas({
   onReset,
   meshes,
   cameraPosition,
+  lightPosition,
 }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -113,7 +115,13 @@ export default function Canvas({
         shaderProgram,
         "light_position",
       );
-      gl.uniform3f(lightPositionLocation, 0, 10, 300);
+
+      gl.uniform3f(
+        lightPositionLocation,
+        lightPosition[0],
+        lightPosition[1],
+        lightPosition[2],
+      );
 
       const lightColorLocation = gl.getUniformLocation(
         shaderProgram,
@@ -151,7 +159,7 @@ export default function Canvas({
     }
 
     initWebGL();
-  }, []);
+  }, [lightPosition]);
 
   const render = useCallback(() => {
     if (!webGLContext || !shaderProgramRef.current) return;

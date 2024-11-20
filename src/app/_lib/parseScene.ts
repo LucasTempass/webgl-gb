@@ -5,6 +5,7 @@ import { ObjModel } from "obj-file-parser";
 import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 
 export interface Scene {
+  lightPosition: [number, number, number];
   cameraPosition: [number, number, number];
   objects: Mesh[];
 }
@@ -27,6 +28,7 @@ export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
   ).then((v) => v.flat());
 
   return {
+    lightPosition: scene.light.position,
     cameraPosition: scene.camera.position,
     objects: meshes,
   };

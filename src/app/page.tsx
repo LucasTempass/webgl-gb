@@ -21,6 +21,7 @@ export default function Page() {
       <CanvasLazy
         onReset={() => setScene(null)}
         cameraPosition={scene.cameraPosition}
+        lightPosition={scene.lightPosition}
         meshes={scene.objects}
       />
     </div>
