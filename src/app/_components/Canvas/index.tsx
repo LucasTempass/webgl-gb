@@ -298,13 +298,12 @@ export default function Canvas({ onReset, file }: CanvasProps) {
     };
   }, [camera, selectedMeshIndex, transformations]);
 
+  const objModel =
+    selectedMeshIndex === null ? null : models[selectedMeshIndex];
+
   return (
     <div>
-      {selectedMeshIndex !== null && (
-        <p className="absolute top-4 left-4">
-          {models[selectedMeshIndex].name}
-        </p>
-      )}
+      {objModel && <p className="absolute top-4 left-4">{objModel.name}</p>}
 
       <button
         onClick={onReset}
