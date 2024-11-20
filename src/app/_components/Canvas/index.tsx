@@ -363,12 +363,18 @@ export default function Canvas({
     selectedMeshIndex === null ? null : meshes[selectedMeshIndex];
 
   return (
-    <div>
-      {objModel && <p className="absolute top-4 left-4">{objModel.name}</p>}
+    <div className="text-amber-900 bg-amber-50">
+      {
+        <p className="absolute top-4 left-4 font-bold text-xl">
+          {objModel
+            ? objModel.name
+            : "Selecione um objeto utilizando os números de 1 a 9."}
+        </p>
+      }
 
       <button
         onClick={onReset}
-        className="font-bold text-xl absolute top-4 right-8 text-white"
+        className="font-bold text-xl absolute top-4 right-8 text-amber-950"
       >
         X
       </button>
