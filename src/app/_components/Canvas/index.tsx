@@ -48,6 +48,7 @@ export default function Canvas({
     if (!gl) return [];
 
     return meshes.map((mesh) => {
+      // TODO create texture buffer
       const vertexBuffer = gl.createBuffer();
       const indexBuffer = gl.createBuffer();
 
@@ -105,11 +106,6 @@ export default function Canvas({
       }
 
       gl.useProgram(shaderProgram);
-
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), 0.7);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), 0.7);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), 0.7);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), 0.7);
 
       const lightPositionLocation = gl.getUniformLocation(
         shaderProgram,
@@ -208,6 +204,13 @@ export default function Canvas({
         transformation.scale,
         transformation.scale,
       ]);
+
+      const coeficients = mesh.coeficients;
+
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), coeficients.ka);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), coeficients.ks);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), coeficients.kd);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), coeficients.q);
 
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);

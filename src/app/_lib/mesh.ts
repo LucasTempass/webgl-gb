@@ -1,11 +1,19 @@
 import { ObjModel } from "obj-file-parser";
 import { Transformation } from "@/app/_lib/types/Transformation.ts";
 
+interface Coeficients {
+  ka: number;
+  ks: number;
+  kd: number;
+  q: number;
+}
+
 export default class Mesh {
   vertices: Float32Array;
   indices: Uint32Array;
   transformation: Transformation;
   name: string;
+  coeficients: Coeficients;
 
   constructor(model: ObjModel, transformation?: Transformation) {
     const serializedVertices: number[] = [];
@@ -46,5 +54,12 @@ export default class Mesh {
     };
 
     this.transformation = transformation ?? defaultTransformation;
+
+    this.coeficients = {
+      ka: Math.random(),
+      ks: Math.random(),
+      kd: Math.random(),
+      q: Math.random(),
+    };
   }
 }
