@@ -9,6 +9,7 @@ import Camera from "@/app/_lib/camera.ts";
 import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
+import { loadImage } from "@/app/_lib/loadImage.ts";
 
 interface CanvasProps {
   file: string;
@@ -146,13 +147,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      const image = new Image();
-      // stored in public folder
-      image.src = "/texture_1.jpeg";
-
-      image.onload = () => {
-        console.log("LOADED");
-
+      loadImage("/texture_1.jpeg", (image) => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
         gl.texImage2D(
@@ -163,7 +158,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
           gl.UNSIGNED_BYTE,
           image,
         );
-      };
+      });
 
       gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
     }
