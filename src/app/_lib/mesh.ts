@@ -7,7 +7,7 @@ export default class Mesh {
   transformation: Transformation;
   name: string;
 
-  constructor(model: ObjModel) {
+  constructor(model: ObjModel, transformation?: Transformation) {
     const serializedVertices: number[] = [];
     const serializedIndices: number[] = [];
 
@@ -42,10 +42,13 @@ export default class Mesh {
     this.vertices = Float32Array.from(serializedVertices);
     this.indices = Uint32Array.from(serializedIndices);
     this.name = model.name;
-    this.transformation = {
+
+    const defaultTransformation = {
       rotation: { x: 0, y: 0, z: 0 },
       translation: { x: 0, y: 0, z: 0 },
       scale: 1,
     };
+
+    this.transformation = transformation ?? defaultTransformation;
   }
 }
