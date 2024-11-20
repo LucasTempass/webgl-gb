@@ -8,10 +8,11 @@ export interface Scene {
 export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
   const indexFile = list.find((v) => v.name === "index.json");
 
+  // Diretório não possui arquivo index.json. Por favor, selecione outro diretório.
   if (!indexFile) {
-    throw new Error(
-      "Diretório não possui arquivo index.json. Por favor, selecione outro diretório.",
-    );
+    return {
+      objects: [],
+    };
   }
 
   const scene = schema.parse(JSON.parse(await parseFile(indexFile)));
