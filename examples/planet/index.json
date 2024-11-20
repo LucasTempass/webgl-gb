@@ -18,9 +18,9 @@
       },
       "material": {
         "texture": "earth.jpg",
-        "ka": 0.2,
+        "ka": 0.7,
         "kd": 0.9,
-        "ks": 0.2
+        "ks": 0.1
       }
     },
     {
@@ -28,7 +28,7 @@
       "file": "planeta.obj",
       "material": {
         "texture": "moon.jpg",
-        "ka": 0.1,
+        "ka": 0.6,
         "kd": 0.9,
         "ks": 0.1
       },
