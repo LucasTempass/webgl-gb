@@ -16,6 +16,8 @@ export default class Mesh {
 
       const normal = model.vertexNormals[faceVertex.vertexNormalIndex - 1];
 
+      const texcoord = model.textureCoords[faceVertex.textureCoordsIndex - 1];
+
       // coordenadas
       serializedVertices.push(position?.x || 0);
       serializedVertices.push(position?.y || 0);
@@ -28,6 +30,9 @@ export default class Mesh {
       serializedVertices.push(normal?.x || 0);
       serializedVertices.push(normal?.y || 0);
       serializedVertices.push(normal?.z || 0);
+      // texture coordinates
+      serializedVertices.push(texcoord?.u || 0);
+      serializedVertices.push(texcoord?.v || 0);
 
       serializedIndices.push(index);
     });

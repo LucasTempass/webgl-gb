@@ -135,6 +135,37 @@ export default function Canvas({ onReset, file }: CanvasProps) {
       gl.uniform3f(lightColorLocation, 1.0, 1.0, 1.0);
 
       gl.enable(gl.DEPTH_TEST);
+
+      // Load and bind texture
+      const texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+
+      // Set the parameters so we can render any size image
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+      const image = new Image();
+      // stored in public folder
+      image.src = "/texture_1.jpeg";
+
+      image.onload = () => {
+        console.log("LOADED");
+
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGBA,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          image,
+        );
+      };
+
+      gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
     }
 
     initWebGL();
@@ -206,7 +237,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
         3,
         gl.FLOAT,
         false,
-        9 * Float32Array.BYTES_PER_ELEMENT,
+        11 * Float32Array.BYTES_PER_ELEMENT,
         0,
       );
 
@@ -220,7 +251,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
         3,
         gl.FLOAT,
         false,
-        9 * Float32Array.BYTES_PER_ELEMENT,
+        11 * Float32Array.BYTES_PER_ELEMENT,
         3 * Float32Array.BYTES_PER_ELEMENT,
       );
 
@@ -228,14 +259,31 @@ export default function Canvas({ onReset, file }: CanvasProps) {
         shaderProgram,
         "base_normal",
       );
+
       gl.enableVertexAttribArray(normalAttributeLocation);
       gl.vertexAttribPointer(
         normalAttributeLocation,
         3,
         gl.FLOAT,
         false,
-        9 * Float32Array.BYTES_PER_ELEMENT,
+        11 * Float32Array.BYTES_PER_ELEMENT,
         6 * Float32Array.BYTES_PER_ELEMENT,
+      );
+
+      const texcoordAttributeLocation = gl.getAttribLocation(
+        shaderProgram,
+        "base_texcoord",
+      );
+
+      gl.enableVertexAttribArray(texcoordAttributeLocation);
+
+      gl.vertexAttribPointer(
+        texcoordAttributeLocation,
+        2,
+        gl.FLOAT,
+        false,
+        11 * Float32Array.BYTES_PER_ELEMENT,
+        9 * Float32Array.BYTES_PER_ELEMENT,
       );
 
       gl.drawElements(gl.TRIANGLES, mesh.indices.length, gl.UNSIGNED_INT, 0);

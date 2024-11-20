@@ -6,7 +6,7 @@ export function compileShader(
   const shader = gl.createShader(type);
 
   if (!shader) {
-    throw new Error("Error creating shader: " + type);
+    throw new Error("Error creating shader: " + source);
   }
 
   gl.shaderSource(shader, source);
@@ -14,7 +14,7 @@ export function compileShader(
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     gl.deleteShader(shader);
-    throw new Error("Error compiling shader: " + type);
+    throw new Error("Error compiling shader: " + source);
   }
 
   return shader;
