@@ -6,7 +6,7 @@ import { vertexShaderContent } from "@/app/_lib/shaders/vertexShader.ts";
 import { fragmentShaderContent } from "@/app/_lib/shaders/fragmentShader.ts";
 import { mat4 } from "gl-matrix";
 import Camera from "@/app/_lib/camera.ts";
-import Mesh from "@/app/_lib/mesh.ts";
+import Mesh, { Face } from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
 import { loadImage } from "@/app/_lib/loadImage.ts";
 
@@ -192,28 +192,47 @@ export default function Canvas({
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);
 
+      const materialGroups = new Map<string, Face[]>();
+
       mesh.faces.forEach((face) => {
-        const material = face.material;
+        const materialKey = face.material.name;
+
+        if (!materialGroups.has(materialKey)) {
+          materialGroups.set(materialKey, []);
+        }
+
+        materialGroups.get(materialKey)?.push(face);
+      });
+
+      materialGroups.forEach((faces) => {
+        const material = faces[0].material;
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), material.ka);
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), material.ks);
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), material.kd);
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), material.q);
 
         const faceVertices = new Float32Array(
-          face.positionVertices.flatMap((v, i) => [
-            v.x,
-            v.y,
-            v.z,
-            face.normalVertices[i].x,
-            face.normalVertices[i].y,
-            face.normalVertices[i].z,
-            face.textureVertices[i].u,
-            face.textureVertices[i].v,
-          ]),
+          faces.flatMap((face) =>
+            face.positionVertices.flatMap((v, i) => [
+              v.x,
+              v.y,
+              v.z,
+              face.normalVertices[i].x,
+              face.normalVertices[i].y,
+              face.normalVertices[i].z,
+              face.textureVertices[i].u,
+              face.textureVertices[i].v,
+            ]),
+          ),
         );
 
         const faceIndices = new Uint32Array(
-          face.positionVertices.map((_, vertexIndex) => vertexIndex),
+          faces.flatMap((face, faceIndex) =>
+            face.positionVertices.map(
+              (_, vertexIndex) =>
+                faceIndex * face.positionVertices.length + vertexIndex,
+            ),
+          ),
         );
 
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
