@@ -4,22 +4,19 @@ import ObjFileParser, {
   VertexTexture,
 } from "obj-file-parser";
 import { Transformation } from "@/app/_lib/types/Transformation.ts";
+import { ObjectSchema } from "@/app/_lib/schema.ts";
 
 export class Material {
-  name: string;
   ka: number;
   ks: number;
   kd: number;
-  q: number;
   texture: ImageBitmap | null;
 
-  constructor(name: string) {
-    this.name = name;
+  constructor() {
     this.texture = null;
     this.ka = 0.2;
     this.ks = 1;
     this.kd = 0.8;
-    this.q = 10;
   }
 }
 
@@ -50,26 +47,26 @@ export default class Mesh {
   constructor(
     model: ObjModel,
     texture: ImageBitmap | null,
-    transformation: Transformation,
-    name: string,
+    objectSchema: ObjectSchema,
   ) {
-    this.name = name;
-    this.faces = model.faces.map((face) => this.mapFace(face, model, texture));
-    this.transformation = transformation ?? {
-      rotation: { x: 0, y: 0, z: 0 },
-      translation: { x: 0, y: 0, z: 0 },
-      scale: 1,
-    };
+    const material = new Material();
+    material.ka = objectSchema.material.ka;
+    material.ks = objectSchema.material.ks;
+    material.kd = objectSchema.material.kd;
+    material.texture = texture;
+
+    this.name = objectSchema.name;
+    this.transformation = objectSchema.transformation;
+    this.faces = model.faces.map((face) => {
+      return this.mapFace(face, model, material);
+    });
   }
 
   private mapFace(
     face: ObjFileParser.Face,
     model: ObjModel,
-    texture: ImageBitmap | null,
+    material: Material,
   ) {
-    const material = new Material(face.material);
-    material.texture = texture;
-
     const faceVertices = face.vertices;
 
     const positionVertices = faceVertices.map(

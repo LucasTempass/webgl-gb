@@ -14,11 +14,20 @@ const transformationSchema = z.object({
   scale: z.number(),
 });
 
+const materialSchema = z.object({
+  texture: z.string(),
+  ka: z.number(),
+  ks: z.number(),
+  kd: z.number(),
+});
+
+export type MaterialSchema = z.infer<typeof materialSchema>;
+
 const objectSchema = z.object({
   name: z.string(),
   transformation: transformationSchema,
+  material: materialSchema,
   file: z.string(),
-  texture: z.string(),
 });
 
 export type ObjectSchema = z.infer<typeof objectSchema>;

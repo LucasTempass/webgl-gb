@@ -1,4 +1,9 @@
-import { ObjectSchema, SceneSchema, schema } from "@/app/_lib/schema.ts";
+import {
+  MaterialSchema,
+  ObjectSchema,
+  SceneSchema,
+  schema,
+} from "@/app/_lib/schema.ts";
 import { parseFile } from "@/app/_lib/utils/files.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { ObjModel } from "obj-file-parser";
@@ -38,29 +43,26 @@ async function mapObject(
   objectSchema: ObjectSchema,
   files: FileSystemFileHandle[],
 ): Promise<Mesh[]> {
-  const file = files.filter((v) => v.name === objectSchema.file)[0];
+  const file = files.find((v) => v.name === objectSchema.file);
 
   if (!file) {
     return [];
   }
 
-  const texture = await parseTexture(files, objectSchema);
+  const texture = await parseTexture(files, objectSchema.material);
 
   const fileContent = await parseFile(file);
 
   const models: ObjModel[] = parseSimpleObjects(fileContent);
 
-  return models.map(
-    (model) =>
-      new Mesh(model, texture, objectSchema.transformation, objectSchema.name),
-  );
+  return models.map((model) => new Mesh(model, texture, objectSchema));
 }
 
 async function parseTexture(
   files: FileSystemFileHandle[],
-  objectSchema: ObjectSchema,
+  materialSchema: MaterialSchema,
 ) {
-  const texture = files.filter((v) => v.name === objectSchema.texture)[0];
+  const texture = files.find((v) => v.name === materialSchema.texture);
 
   if (!texture) {
     return null;

@@ -6,9 +6,8 @@ import { vertexShaderContent } from "@/app/_lib/shaders/vertexShader.ts";
 import { fragmentShaderContent } from "@/app/_lib/shaders/fragmentShader.ts";
 import { mat4 } from "gl-matrix";
 import Camera from "@/app/_lib/camera.ts";
-import Mesh, { Face } from "@/app/_lib/mesh.ts";
+import Mesh from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
-import { loadImage } from "@/app/_lib/loadImage.ts";
 
 interface CanvasProps {
   meshes: Mesh[];
@@ -42,20 +41,9 @@ export default function Canvas({
 
   const camera = useMemo(() => new Camera(cameraPosition), [cameraPosition]);
 
-  const texturesMap = useMemo(() => {
-    if (!webGLContext) return new Map<string, WebGLTexture>();
-
-    const faces = meshes.map((mesh) => mesh.faces).flat();
-
-    const materialsMap = groupByMaterial(faces);
-
-    const map = new Map<string, WebGLTexture>();
-
-    materialsMap.keys().forEach((key) => {
-      map.set(key, webGLContext.createTexture() as WebGLTexture);
-    });
-
-    return map;
+  const textures = useMemo(() => {
+    if (!webGLContext) return [];
+    return meshes.map(() => webGLContext.createTexture());
   }, [meshes, webGLContext]);
 
   useEffect(() => {
@@ -122,6 +110,8 @@ export default function Canvas({
 
       gl.uniform3f(lightColorLocation, 1.0, 1.0, 1.0);
 
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), 10);
+
       gl.enable(gl.DEPTH_TEST);
     }
 
@@ -164,7 +154,7 @@ export default function Canvas({
       camera.projectionMatrix,
     );
 
-    meshes.forEach((mesh) => {
+    meshes.forEach((mesh, index) => {
       const transformation = mesh.transformation;
 
       const model = mat4.create();
@@ -185,126 +175,123 @@ export default function Canvas({
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);
 
-      const materialGroups = groupByMaterial(mesh.faces);
+      const faces = mesh.faces;
 
-      materialGroups.forEach((faces) => {
-        const material = faces[0].material;
-        gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), material.ka);
-        gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), material.ks);
-        gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), material.kd);
-        gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), material.q);
+      const material = faces[0].material;
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), material.ka);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), material.ks);
+      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), material.kd);
 
-        const textureBuffer = texturesMap.get(material.name);
+      const textureBuffer = textures[index];
 
-        gl.bindTexture(gl.TEXTURE_2D, textureBuffer as WebGLTexture);
+      gl.bindTexture(gl.TEXTURE_2D, textureBuffer as WebGLTexture);
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        const texture = material.texture;
+      const texture = material.texture;
 
-        if (texture) {
-          gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            texture,
-          );
-        } else {
-          // textura padrão
-          gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            1,
-            1,
-            0,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            new Uint8Array([255, 255, 255, 255]),
-          );
-        }
-
-        gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
-
-        const faceVertices = new Float32Array(
-          faces.flatMap((face) =>
-            face.positionVertices.flatMap((v, i) => [
-              v.x,
-              v.y,
-              v.z,
-              face.normalVertices[i].x,
-              face.normalVertices[i].y,
-              face.normalVertices[i].z,
-              face.textureVertices[i].u,
-              face.textureVertices[i].v,
-            ]),
-          ),
-        );
-
-        const faceIndices = new Uint32Array(
-          faces.flatMap((face, faceIndex) =>
-            face.positionVertices.map(
-              (_, vertexIndex) =>
-                faceIndex * face.positionVertices.length + vertexIndex,
-            ),
-          ),
-        );
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, faceVertices, gl.STATIC_DRAW);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faceIndices, gl.STATIC_DRAW);
-
-        const positionAttributeLocation = gl.getAttribLocation(
-          shaderProgram,
-          "base_position",
-        );
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        gl.vertexAttribPointer(
-          positionAttributeLocation,
-          3,
-          gl.FLOAT,
-          false,
-          8 * Float32Array.BYTES_PER_ELEMENT,
+      if (texture) {
+        gl.texImage2D(
+          gl.TEXTURE_2D,
           0,
+          gl.RGBA,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          texture,
         );
+      } else {
+        // textura padrão
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGBA,
+          1,
+          1,
+          0,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          new Uint8Array([255, 255, 255, 255]),
+        );
+      }
 
-        const normalAttributeLocation = gl.getAttribLocation(
-          shaderProgram,
-          "base_normal",
-        );
-        gl.enableVertexAttribArray(normalAttributeLocation);
-        gl.vertexAttribPointer(
-          normalAttributeLocation,
-          3,
-          gl.FLOAT,
-          false,
-          8 * Float32Array.BYTES_PER_ELEMENT,
-          3 * Float32Array.BYTES_PER_ELEMENT,
-        );
+      gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
 
-        const texcoordAttributeLocation = gl.getAttribLocation(
-          shaderProgram,
-          "base_texcoord",
-        );
-        gl.enableVertexAttribArray(texcoordAttributeLocation);
-        gl.vertexAttribPointer(
-          texcoordAttributeLocation,
-          2,
-          gl.FLOAT,
-          false,
-          8 * Float32Array.BYTES_PER_ELEMENT,
-          6 * Float32Array.BYTES_PER_ELEMENT,
-        );
+      const faceVertices = new Float32Array(
+        faces.flatMap((face) =>
+          face.positionVertices.flatMap((v, i) => [
+            v.x,
+            v.y,
+            v.z,
+            face.normalVertices[i].x,
+            face.normalVertices[i].y,
+            face.normalVertices[i].z,
+            face.textureVertices[i].u,
+            face.textureVertices[i].v,
+          ]),
+        ),
+      );
 
-        gl.drawElements(gl.TRIANGLES, faceIndices.length, gl.UNSIGNED_INT, 0);
-      });
+      const faceIndices = new Uint32Array(
+        faces.flatMap((face, faceIndex) =>
+          face.positionVertices.map(
+            (_, vertexIndex) =>
+              faceIndex * face.positionVertices.length + vertexIndex,
+          ),
+        ),
+      );
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, faceVertices, gl.STATIC_DRAW);
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faceIndices, gl.STATIC_DRAW);
+
+      const positionAttributeLocation = gl.getAttribLocation(
+        shaderProgram,
+        "base_position",
+      );
+      gl.enableVertexAttribArray(positionAttributeLocation);
+      gl.vertexAttribPointer(
+        positionAttributeLocation,
+        3,
+        gl.FLOAT,
+        false,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        0,
+      );
+
+      const normalAttributeLocation = gl.getAttribLocation(
+        shaderProgram,
+        "base_normal",
+      );
+      gl.enableVertexAttribArray(normalAttributeLocation);
+      gl.vertexAttribPointer(
+        normalAttributeLocation,
+        3,
+        gl.FLOAT,
+        false,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT,
+      );
+
+      const texcoordAttributeLocation = gl.getAttribLocation(
+        shaderProgram,
+        "base_texcoord",
+      );
+      gl.enableVertexAttribArray(texcoordAttributeLocation);
+      gl.vertexAttribPointer(
+        texcoordAttributeLocation,
+        2,
+        gl.FLOAT,
+        false,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        6 * Float32Array.BYTES_PER_ELEMENT,
+      );
+
+      gl.drawElements(gl.TRIANGLES, faceIndices.length, gl.UNSIGNED_INT, 0);
     });
 
     animationRequestRef.current = requestAnimationFrame(render);
@@ -313,6 +300,7 @@ export default function Canvas({
     camera.viewMatrix,
     indexBuffer,
     meshes,
+    textures,
     vertexBuffer,
     webGLContext,
   ]);
@@ -388,19 +376,4 @@ export default function Canvas({
       <canvas ref={canvasRef} className="h-full w-full"></canvas>
     </div>
   );
-}
-
-function groupByMaterial(faces: Face[]) {
-  const materialGroups = new Map<string, Face[]>();
-
-  faces.forEach((face) => {
-    const materialKey = face.material.name;
-
-    if (!materialGroups.has(materialKey)) {
-      materialGroups.set(materialKey, []);
-    }
-
-    materialGroups.get(materialKey)?.push(face);
-  });
-  return materialGroups;
 }
