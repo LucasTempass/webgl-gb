@@ -21,13 +21,9 @@ export default class Mesh {
       const texcoord = model.textureCoords[faceVertex.textureCoordsIndex - 1];
 
       // coordenadas
-      serializedVertices.push(position?.x || 0);
-      serializedVertices.push(position?.y || 0);
-      serializedVertices.push(position?.z || 0);
-      // cores
-      serializedVertices.push(Math.random());
-      serializedVertices.push(Math.random());
-      serializedVertices.push(Math.random());
+      serializedVertices.push(position.x);
+      serializedVertices.push(position.y);
+      serializedVertices.push(position.z);
       // normal
       serializedVertices.push(normal?.x || 0);
       serializedVertices.push(normal?.y || 0);

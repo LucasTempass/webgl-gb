@@ -1,6 +1,5 @@
 export const vertexShaderContent = `#version 300 es
 in vec3 base_position;
-in vec3 base_color;
 in vec3 base_normal;
 in vec2 base_texcoord;
 

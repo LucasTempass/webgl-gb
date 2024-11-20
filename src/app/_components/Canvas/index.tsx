@@ -225,22 +225,8 @@ export default function Canvas({
         3,
         gl.FLOAT,
         false,
-        11 * Float32Array.BYTES_PER_ELEMENT,
+        8 * Float32Array.BYTES_PER_ELEMENT,
         0,
-      );
-
-      const colorAttributeLocation = gl.getAttribLocation(
-        shaderProgram,
-        "base_color",
-      );
-      gl.enableVertexAttribArray(colorAttributeLocation);
-      gl.vertexAttribPointer(
-        colorAttributeLocation,
-        3,
-        gl.FLOAT,
-        false,
-        11 * Float32Array.BYTES_PER_ELEMENT,
-        3 * Float32Array.BYTES_PER_ELEMENT,
       );
 
       const normalAttributeLocation = gl.getAttribLocation(
@@ -254,8 +240,8 @@ export default function Canvas({
         3,
         gl.FLOAT,
         false,
-        11 * Float32Array.BYTES_PER_ELEMENT,
-        6 * Float32Array.BYTES_PER_ELEMENT,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT,
       );
 
       const texcoordAttributeLocation = gl.getAttribLocation(
@@ -270,8 +256,8 @@ export default function Canvas({
         2,
         gl.FLOAT,
         false,
-        11 * Float32Array.BYTES_PER_ELEMENT,
-        9 * Float32Array.BYTES_PER_ELEMENT,
+        8 * Float32Array.BYTES_PER_ELEMENT,
+        6 * Float32Array.BYTES_PER_ELEMENT,
       );
 
       gl.drawElements(gl.TRIANGLES, mesh.indices.length, gl.UNSIGNED_INT, 0);
