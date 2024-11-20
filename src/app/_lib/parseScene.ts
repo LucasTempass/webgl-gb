@@ -1,9 +1,13 @@
 import { schema } from "@/app/_lib/schema.ts";
 import { parseFile } from "@/app/_lib/utils/files.ts";
+import Mesh from "@/app/_lib/mesh.ts";
+import { ObjModel } from "obj-file-parser";
+import { useMemo } from "react";
+import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 
 export interface Scene {
   cameraPosition: [number, number, number];
-  objects: string[];
+  objects: Mesh[];
 }
 
 export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
@@ -25,8 +29,14 @@ export async function parseScene(list: FileSystemFileHandle[]): Promise<Scene> {
     objectsFiles.map((v) => parseFile(v)),
   );
 
+  const models: ObjModel[] = objectsFilesContent
+    .map((file) => parseSimpleObjects(file))
+    .flat();
+
+  const meshes: Mesh[] = models.map((model) => new Mesh(model));
+
   return {
     cameraPosition: scene.camera.position,
-    objects: objectsFilesContent,
+    objects: meshes,
   };
 }
