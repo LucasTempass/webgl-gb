@@ -16,10 +16,10 @@ export class Material {
   constructor(name: string) {
     this.name = name;
     this.texture = null;
-    this.ka = Math.random();
-    this.ks = Math.random();
-    this.kd = Math.random();
-    this.q = Math.random();
+    this.ka = 0.2;
+    this.ks = 1;
+    this.kd = 0.8;
+    this.q = 10;
   }
 }
 
@@ -47,9 +47,14 @@ export default class Mesh {
   transformation: Transformation;
   faces: Face[];
 
-  constructor(model: ObjModel, transformation?: Transformation) {
-    this.name = model.name;
-    this.faces = model.faces.map((face) => this.mapFace(face, model));
+  constructor(
+    model: ObjModel,
+    texture: ImageBitmap | null,
+    transformation: Transformation,
+    name: string,
+  ) {
+    this.name = name;
+    this.faces = model.faces.map((face) => this.mapFace(face, model, texture));
     this.transformation = transformation ?? {
       rotation: { x: 0, y: 0, z: 0 },
       translation: { x: 0, y: 0, z: 0 },
@@ -57,8 +62,13 @@ export default class Mesh {
     };
   }
 
-  private mapFace(face: ObjFileParser.Face, model: ObjModel) {
+  private mapFace(
+    face: ObjFileParser.Face,
+    model: ObjModel,
+    texture: ImageBitmap | null,
+  ) {
     const material = new Material(face.material);
+    material.texture = texture;
 
     const faceVertices = face.vertices;
 

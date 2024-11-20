@@ -3,6 +3,7 @@
     {
       "name": "Terra",
       "file": "planeta.obj",
+      "texture": "earth.jpg",
       "transformation": {
         "scale": 1,
         "rotation": {
@@ -13,6 +14,24 @@
         "translation": {
           "x": 0,
           "y": 0,
+          "z": 0
+        }
+      }
+    },
+    {
+      "name": "Lua",
+      "file": "planeta.obj",
+      "texture": "moon.jpg",
+      "transformation": {
+        "scale": 0.25,
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "translation": {
+          "x": 1,
+          "y": 1,
           "z": 0
         }
       }
@@ -27,7 +46,7 @@
   },
   "light": {
     "position": [
-      10,
+      0,
       10,
       10
     ]

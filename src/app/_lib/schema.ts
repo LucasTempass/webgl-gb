@@ -16,8 +16,9 @@ const transformationSchema = z.object({
 
 const objectSchema = z.object({
   name: z.string(),
-  transformation: transformationSchema.optional(),
+  transformation: transformationSchema,
   file: z.string(),
+  texture: z.string(),
 });
 
 export type ObjectSchema = z.infer<typeof objectSchema>;

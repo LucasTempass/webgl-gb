@@ -44,9 +44,27 @@ async function mapObject(
     return [];
   }
 
+  const texture = await parseTexture(files, objectSchema);
+
   const fileContent = await parseFile(file);
 
   const models: ObjModel[] = parseSimpleObjects(fileContent);
 
-  return models.map((model) => new Mesh(model, objectSchema.transformation));
+  return models.map(
+    (model) =>
+      new Mesh(model, texture, objectSchema.transformation, objectSchema.name),
+  );
+}
+
+async function parseTexture(
+  files: FileSystemFileHandle[],
+  objectSchema: ObjectSchema,
+) {
+  const texture = files.filter((v) => v.name === objectSchema.texture)[0];
+
+  if (!texture) {
+    return null;
+  }
+
+  return await createImageBitmap(await texture.getFile());
 }

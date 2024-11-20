@@ -42,6 +42,22 @@ export default function Canvas({
 
   const camera = useMemo(() => new Camera(cameraPosition), [cameraPosition]);
 
+  const texturesMap = useMemo(() => {
+    if (!webGLContext) return new Map<string, WebGLTexture>();
+
+    const faces = meshes.map((mesh) => mesh.faces).flat();
+
+    const materialsMap = groupByMaterial(faces);
+
+    const map = new Map<string, WebGLTexture>();
+
+    materialsMap.keys().forEach((key) => {
+      map.set(key, webGLContext.createTexture() as WebGLTexture);
+    });
+
+    return map;
+  }, [meshes, webGLContext]);
+
   useEffect(() => {
     async function initWebGL() {
       if (!canvasRef.current) return;
@@ -107,29 +123,6 @@ export default function Canvas({
       gl.uniform3f(lightColorLocation, 1.0, 1.0, 1.0);
 
       gl.enable(gl.DEPTH_TEST);
-
-      const texture = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-      loadImage("/moon.jpg", (image) => {
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          gl.RGBA,
-          gl.RGBA,
-          gl.UNSIGNED_BYTE,
-          image,
-        );
-      });
-
-      gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
     }
 
     initWebGL();
@@ -192,17 +185,7 @@ export default function Canvas({
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);
 
-      const materialGroups = new Map<string, Face[]>();
-
-      mesh.faces.forEach((face) => {
-        const materialKey = face.material.name;
-
-        if (!materialGroups.has(materialKey)) {
-          materialGroups.set(materialKey, []);
-        }
-
-        materialGroups.get(materialKey)?.push(face);
-      });
+      const materialGroups = groupByMaterial(mesh.faces);
 
       materialGroups.forEach((faces) => {
         const material = faces[0].material;
@@ -210,6 +193,43 @@ export default function Canvas({
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), material.ks);
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), material.kd);
         gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), material.q);
+
+        const textureBuffer = texturesMap.get(material.name);
+
+        gl.bindTexture(gl.TEXTURE_2D, textureBuffer as WebGLTexture);
+
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        const texture = material.texture;
+
+        if (texture) {
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            texture,
+          );
+        } else {
+          // textura padrão
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            1,
+            1,
+            0,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            new Uint8Array([255, 255, 255, 255]),
+          );
+        }
+
+        gl.uniform1i(gl.getUniformLocation(shaderProgram, "texture_buffer"), 0);
 
         const faceVertices = new Float32Array(
           faces.flatMap((face) =>
@@ -368,4 +388,19 @@ export default function Canvas({
       <canvas ref={canvasRef} className="h-full w-full"></canvas>
     </div>
   );
+}
+
+function groupByMaterial(faces: Face[]) {
+  const materialGroups = new Map<string, Face[]>();
+
+  faces.forEach((face) => {
+    const materialKey = face.material.name;
+
+    if (!materialGroups.has(materialKey)) {
+      materialGroups.set(materialKey, []);
+    }
+
+    materialGroups.get(materialKey)?.push(face);
+  });
+  return materialGroups;
 }
