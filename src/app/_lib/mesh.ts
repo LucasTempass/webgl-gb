@@ -1,8 +1,10 @@
 import { ObjModel } from "obj-file-parser";
+import { Transformation } from "@/app/_lib/types/Transformation.ts";
 
 export default class Mesh {
   vertices: Float32Array;
   indices: Uint32Array;
+  transformation: Transformation;
   name: string;
 
   constructor(model: ObjModel) {
@@ -40,5 +42,10 @@ export default class Mesh {
     this.vertices = Float32Array.from(serializedVertices);
     this.indices = Uint32Array.from(serializedIndices);
     this.name = model.name;
+    this.transformation = {
+      rotation: { x: 0, y: 0, z: 0 },
+      translation: { x: 0, y: 0, z: 0 },
+      scale: 1,
+    };
   }
 }

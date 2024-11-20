@@ -40,14 +40,6 @@ export default function Canvas({
 
   const camera = useMemo(() => new Camera(cameraPosition), [cameraPosition]);
 
-  const transformations = useMemo(() => {
-    return meshes.map(() => ({
-      rotation: { x: 0, y: 0, z: 0 },
-      translation: { x: 0, y: 0, z: 0 },
-      scale: 2,
-    }));
-  }, [meshes]);
-
   const buffers = useMemo(() => {
     const gl = webGLContext;
 
@@ -191,7 +183,7 @@ export default function Canvas({
     buffers.forEach((buffer, index) => {
       const mesh = meshes[index];
 
-      const transformation = transformations[index];
+      const transformation = mesh.transformation;
 
       const model = mat4.create();
 
@@ -280,7 +272,7 @@ export default function Canvas({
     });
 
     animationRequestRef.current = requestAnimationFrame(render);
-  }, [buffers, camera, meshes, transformations, webGLContext]);
+  }, [buffers, camera, meshes, webGLContext]);
 
   useEffect(() => {
     console.count("Render updated.");
@@ -296,7 +288,7 @@ export default function Canvas({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const index = onKeyDownFn(e, transformations, selectedMeshIndex, camera);
+      const index = onKeyDownFn(e, meshes, selectedMeshIndex, camera);
 
       setSelectedMeshIndex(index);
     };
@@ -334,7 +326,7 @@ export default function Canvas({
       window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mousemove", onMouseMove);
     };
-  }, [camera, selectedMeshIndex, transformations]);
+  }, [camera, meshes, selectedMeshIndex]);
 
   const objModel =
     selectedMeshIndex === null ? null : meshes[selectedMeshIndex];

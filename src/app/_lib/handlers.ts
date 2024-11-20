@@ -1,28 +1,15 @@
 import Camera from "./camera.ts";
-
-interface Point2D {
-  x: number;
-  y: number;
-}
-
-interface Point3D extends Point2D {
-  z: number;
-}
-
-interface Transformations {
-  rotation: Point3D;
-  translation: Point3D;
-  scale: number;
-}
+import { Transformation } from "@/app/_lib/types/Transformation.ts";
+import Mesh from "@/app/_lib/mesh.ts";
 
 export function onKeyDown(
   event: KeyboardEvent,
-  transformations: Transformations[],
+  meshes: Mesh[],
   index: number | null,
   camera: Camera,
 ): number | null {
-  const transformation: Transformations | null =
-    index == null ? null : transformations[index];
+  const transformation: Transformation | null =
+    index == null ? null : meshes[index].transformation;
 
   if (!transformation) {
     updateCamera(event, camera);
@@ -92,7 +79,7 @@ function getIndex(event: KeyboardEvent, index: number | null): number | null {
 
 function updateTransformation(
   event: KeyboardEvent,
-  transformation: Transformations,
+  transformation: Transformation,
 ) {
   switch (event.key) {
     // Translação
