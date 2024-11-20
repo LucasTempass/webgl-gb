@@ -42,26 +42,6 @@ export default function Canvas({
 
   const camera = useMemo(() => new Camera(cameraPosition), [cameraPosition]);
 
-  const buffers = useMemo(() => {
-    const gl = webGLContext;
-
-    if (!gl) return [];
-
-    return meshes.map((mesh) => {
-      // TODO create texture buffer
-      const vertexBuffer = gl.createBuffer();
-      const indexBuffer = gl.createBuffer();
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, mesh.vertices, gl.STATIC_DRAW);
-
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
-
-      return { vertexBuffer, indexBuffer };
-    });
-  }, [meshes, webGLContext]);
-
   useEffect(() => {
     async function initWebGL() {
       if (!canvasRef.current) return;
@@ -69,7 +49,7 @@ export default function Canvas({
       const gl = canvasRef.current.getContext("webgl2");
 
       if (!gl) {
-        throw new Error("WebGL 2 não suportada.");
+        throw new Error("WebGL 2 not supported.");
       }
 
       setWebGLContext(gl);
@@ -89,7 +69,7 @@ export default function Canvas({
       const shaderProgram = gl.createProgram();
 
       if (!shaderProgram) {
-        throw new Error("Não foi possível criar o programa de shader.");
+        throw new Error("Unable to create shader program.");
       }
 
       shaderProgramRef.current = shaderProgram;
@@ -100,7 +80,7 @@ export default function Canvas({
 
       if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
         console.error(
-          "Não foi possível linkar o programa de shader: ",
+          "Unable to link shader program: ",
           gl.getProgramInfoLog(shaderProgram),
         );
       }
@@ -155,6 +135,16 @@ export default function Canvas({
     initWebGL();
   }, [lightPosition]);
 
+  const vertexBuffer = useMemo(() => {
+    if (!webGLContext) return null;
+    return webGLContext.createBuffer();
+  }, [webGLContext]);
+
+  const indexBuffer = useMemo(() => {
+    if (!webGLContext) return null;
+    return webGLContext.createBuffer();
+  }, [webGLContext]);
+
   const render = useCallback(() => {
     if (!webGLContext || !shaderProgramRef.current) return;
 
@@ -175,99 +165,118 @@ export default function Canvas({
       shaderProgram,
       "projection",
     );
-
     gl.uniformMatrix4fv(
       projectionMatrixLocation,
       false,
       camera.projectionMatrix,
     );
 
-    buffers.forEach((buffer, index) => {
-      const mesh = meshes[index];
-
+    meshes.forEach((mesh) => {
       const transformation = mesh.transformation;
 
       const model = mat4.create();
-
       mat4.translate(model, model, [
         transformation.translation.x,
         transformation.translation.y,
         transformation.translation.z,
       ]);
-
       mat4.rotateX(model, model, transformation.rotation.x);
       mat4.rotateY(model, model, transformation.rotation.y);
       mat4.rotateZ(model, model, transformation.rotation.z);
-
       mat4.scale(model, model, [
         transformation.scale,
         transformation.scale,
         transformation.scale,
       ]);
 
-      const coeficients = mesh.coeficients;
-
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), coeficients.ka);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), coeficients.ks);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), coeficients.kd);
-      gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), coeficients.q);
-
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer.vertexBuffer);
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer.indexBuffer);
+      mesh.faces.forEach((face) => {
+        const material = face.material;
+        gl.uniform1f(gl.getUniformLocation(shaderProgram, "ka"), material.ka);
+        gl.uniform1f(gl.getUniformLocation(shaderProgram, "ks"), material.ks);
+        gl.uniform1f(gl.getUniformLocation(shaderProgram, "kd"), material.kd);
+        gl.uniform1f(gl.getUniformLocation(shaderProgram, "q"), material.q);
 
-      const positionAttributeLocation = gl.getAttribLocation(
-        shaderProgram,
-        "base_position",
-      );
-      gl.enableVertexAttribArray(positionAttributeLocation);
-      gl.vertexAttribPointer(
-        positionAttributeLocation,
-        3,
-        gl.FLOAT,
-        false,
-        8 * Float32Array.BYTES_PER_ELEMENT,
-        0,
-      );
+        const faceVertices = new Float32Array(
+          face.positionVertices.flatMap((v, i) => [
+            v.x,
+            v.y,
+            v.z,
+            face.normalVertices[i].x,
+            face.normalVertices[i].y,
+            face.normalVertices[i].z,
+            face.textureVertices[i].u,
+            face.textureVertices[i].v,
+          ]),
+        );
 
-      const normalAttributeLocation = gl.getAttribLocation(
-        shaderProgram,
-        "base_normal",
-      );
+        const faceIndices = new Uint32Array(
+          face.positionVertices.map((_, vertexIndex) => vertexIndex),
+        );
 
-      gl.enableVertexAttribArray(normalAttributeLocation);
-      gl.vertexAttribPointer(
-        normalAttributeLocation,
-        3,
-        gl.FLOAT,
-        false,
-        8 * Float32Array.BYTES_PER_ELEMENT,
-        3 * Float32Array.BYTES_PER_ELEMENT,
-      );
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, faceVertices, gl.STATIC_DRAW);
 
-      const texcoordAttributeLocation = gl.getAttribLocation(
-        shaderProgram,
-        "base_texcoord",
-      );
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faceIndices, gl.STATIC_DRAW);
 
-      gl.enableVertexAttribArray(texcoordAttributeLocation);
+        const positionAttributeLocation = gl.getAttribLocation(
+          shaderProgram,
+          "base_position",
+        );
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.vertexAttribPointer(
+          positionAttributeLocation,
+          3,
+          gl.FLOAT,
+          false,
+          8 * Float32Array.BYTES_PER_ELEMENT,
+          0,
+        );
 
-      gl.vertexAttribPointer(
-        texcoordAttributeLocation,
-        2,
-        gl.FLOAT,
-        false,
-        8 * Float32Array.BYTES_PER_ELEMENT,
-        6 * Float32Array.BYTES_PER_ELEMENT,
-      );
+        const normalAttributeLocation = gl.getAttribLocation(
+          shaderProgram,
+          "base_normal",
+        );
+        gl.enableVertexAttribArray(normalAttributeLocation);
+        gl.vertexAttribPointer(
+          normalAttributeLocation,
+          3,
+          gl.FLOAT,
+          false,
+          8 * Float32Array.BYTES_PER_ELEMENT,
+          3 * Float32Array.BYTES_PER_ELEMENT,
+        );
 
-      gl.drawElements(gl.TRIANGLES, mesh.indices.length, gl.UNSIGNED_INT, 0);
+        const texcoordAttributeLocation = gl.getAttribLocation(
+          shaderProgram,
+          "base_texcoord",
+        );
+        gl.enableVertexAttribArray(texcoordAttributeLocation);
+        gl.vertexAttribPointer(
+          texcoordAttributeLocation,
+          2,
+          gl.FLOAT,
+          false,
+          8 * Float32Array.BYTES_PER_ELEMENT,
+          6 * Float32Array.BYTES_PER_ELEMENT,
+        );
+
+        gl.drawElements(gl.TRIANGLES, faceIndices.length, gl.UNSIGNED_INT, 0);
+      });
     });
 
     animationRequestRef.current = requestAnimationFrame(render);
-  }, [buffers, camera, meshes, webGLContext]);
+  }, [
+    camera.projectionMatrix,
+    camera.viewMatrix,
+    indexBuffer,
+    meshes,
+    vertexBuffer,
+    webGLContext,
+  ]);
 
   useEffect(() => {
     console.count("Render updated.");
