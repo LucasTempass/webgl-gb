@@ -116,7 +116,7 @@ export default function Canvas({
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      loadImage("/texture_1.jpeg", (image) => {
+      loadImage("/moon.jpg", (image) => {
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
         gl.texImage2D(

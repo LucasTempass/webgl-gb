@@ -1,0 +1,35 @@
+{
+  "objects": [
+    {
+      "name": "Terra",
+      "file": "planeta.obj",
+      "transformation": {
+        "scale": 1,
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "translation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    }
+  ],
+  "camera": {
+    "position": [
+      0,
+      0,
+      5
+    ]
+  },
+  "light": {
+    "position": [
+      10,
+      10,
+      10
+    ]
+  }
+}
