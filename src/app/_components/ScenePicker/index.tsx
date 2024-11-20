@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { listFiles, parseFile } from "@/app/_lib/utils/files.ts";
 import { parseScene } from "@/app/_lib/parseScene.ts";

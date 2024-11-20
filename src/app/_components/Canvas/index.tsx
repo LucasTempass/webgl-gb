@@ -6,17 +6,16 @@ import { vertexShaderContent } from "@/app/_lib/shaders/vertexShader.ts";
 import { fragmentShaderContent } from "@/app/_lib/shaders/fragmentShader.ts";
 import { mat4 } from "gl-matrix";
 import Camera from "@/app/_lib/camera.ts";
-import { parseSimpleObjects } from "@/app/_lib/objects/parser.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
 import { loadImage } from "@/app/_lib/loadImage.ts";
 
 interface CanvasProps {
-  file: string;
+  meshes: Mesh[];
   onReset: () => void;
 }
 
-export default function Canvas({ onReset, file }: CanvasProps) {
+export default function Canvas({ onReset, meshes }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const animationRequestRef = useRef<number | null>(null);
@@ -34,16 +33,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
   const [webGLContext, setWebGLContext] =
     useState<WebGL2RenderingContext | null>(null);
 
-  const models = useMemo(() => {
-    return parseSimpleObjects(file);
-  }, [file]);
-
   const camera = useMemo(() => new Camera(), []);
-
-  const meshes: Mesh[] = useMemo(
-    () => models.map((model) => new Mesh(model)),
-    [models],
-  );
 
   const transformations = useMemo(() => {
     return meshes.map(() => ({
@@ -342,7 +332,7 @@ export default function Canvas({ onReset, file }: CanvasProps) {
   }, [camera, selectedMeshIndex, transformations]);
 
   const objModel =
-    selectedMeshIndex === null ? null : models[selectedMeshIndex];
+    selectedMeshIndex === null ? null : meshes[selectedMeshIndex];
 
   return (
     <div>
