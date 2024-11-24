@@ -157,6 +157,20 @@ export default function Canvas({
     meshes.forEach((mesh, index) => {
       const transformation = mesh.transformation;
 
+      if (index === 1) {
+        // Primeiro objeto segue uma trajetória paramétrica (círculo no plano XY)
+        const t = performance.now() / 1000; // Tempo em segundos
+        const radius = 5; // Raio da curva
+        transformation.translation.x = radius * Math.cos(t); // Posição X varia com o cosseno
+        transformation.translation.y = radius * Math.sin(t); // Posição Y varia com o seno
+        transformation.translation.z = 0; // Mantém Z fixo
+      } else {
+        // Outros objetos rotacionam
+        transformation.rotation.x += 0.01;
+        transformation.rotation.y += 0.01;
+      }
+    
+      // Criação da matriz de modelo (transformação)
       const model = mat4.create();
       mat4.translate(model, model, [
         transformation.translation.x,
@@ -172,9 +186,11 @@ export default function Canvas({
         transformation.scale,
       ]);
 
+      // Passar a matriz de transformação ao shader
       const uniformLocation = gl.getUniformLocation(shaderProgram, "model");
       gl.uniformMatrix4fv(uniformLocation, false, model);
 
+      // Restante do código permanece igual (materiais, texturas, vértices, etc.)
       const faces = mesh.faces;
 
       const material = faces[0].material;
