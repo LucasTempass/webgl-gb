@@ -9,26 +9,36 @@ export function applyAnimation(
   const interpolatedT = interpolate(t, animation.type);
   const endFrame = animation.end;
   const startFrame = animation.start;
-  transformation.translation.x =
-    startFrame.translation.x +
-    interpolatedT * (endFrame.translation.x - startFrame.translation.x);
-  transformation.translation.y =
-    startFrame.translation.y +
-    interpolatedT * (endFrame.translation.y - startFrame.translation.y);
-  transformation.translation.z =
-    startFrame.translation.z +
-    interpolatedT * (endFrame.translation.z - startFrame.translation.z);
-  transformation.rotation.x =
-    startFrame.rotation.x +
-    interpolatedT * (endFrame.rotation.x - startFrame.rotation.x);
-  transformation.rotation.y =
-    startFrame.rotation.y +
-    interpolatedT * (endFrame.rotation.y - startFrame.rotation.y);
-  transformation.rotation.z =
-    startFrame.rotation.z +
-    interpolatedT * (endFrame.rotation.z - startFrame.rotation.z);
-  transformation.scale =
-    startFrame.scale + interpolatedT * (endFrame.scale - startFrame.scale);
+
+  const elapsedTime = performance.now();
+
+  if (elapsedTime > animation.duration) {
+    return;
+  }
+
+  if (startFrame.translation && endFrame.translation) {
+    transformation.translation.x =
+      startFrame.translation.x +
+      interpolatedT * (endFrame.translation.x - startFrame.translation.x);
+    transformation.translation.y =
+      startFrame.translation.y +
+      interpolatedT * (endFrame.translation.y - startFrame.translation.y);
+    transformation.translation.z =
+      startFrame.translation.z +
+      interpolatedT * (endFrame.translation.z - startFrame.translation.z);
+  }
+
+  if (startFrame.rotation && endFrame.rotation) {
+    transformation.rotation.x =
+      startFrame.rotation.x +
+      interpolatedT * (endFrame.rotation.x - startFrame.rotation.x);
+    transformation.rotation.y =
+      startFrame.rotation.y +
+      interpolatedT * (endFrame.rotation.y - startFrame.rotation.y);
+    transformation.rotation.z =
+      startFrame.rotation.z +
+      interpolatedT * (endFrame.rotation.z - startFrame.rotation.z);
+  }
 }
 
 function interpolate(t: number, type: string): number {

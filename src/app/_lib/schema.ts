@@ -1,24 +1,27 @@
 import { z } from "zod";
 
+const point3dSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  z: z.number(),
+});
+
 const transformationSchema = z.object({
-  rotation: z.object({
-    x: z.number(),
-    y: z.number(),
-    z: z.number(),
-  }),
-  translation: z.object({
-    x: z.number(),
-    y: z.number(),
-    z: z.number(),
-  }),
+  rotation: point3dSchema,
+  translation: point3dSchema,
   scale: z.number(),
+});
+
+const keyframeSchema = z.object({
+  rotation: point3dSchema.optional(),
+  translation: point3dSchema.optional(),
 });
 
 const animationSchema = z.object({
   type: z.string(),
   duration: z.number(),
-  start: transformationSchema,
-  end: transformationSchema,
+  start: keyframeSchema,
+  end: keyframeSchema,
 });
 
 export type AnimationSchema = z.infer<typeof animationSchema>;
