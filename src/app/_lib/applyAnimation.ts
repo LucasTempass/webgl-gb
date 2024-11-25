@@ -6,23 +6,39 @@ export function applyAnimation(
   transformation: Transformation,
 ) {
   const t = (performance.now() % animation.duration) / animation.duration;
+  const interpolatedT = interpolate(t, animation.type);
   const endFrame = animation.end;
   const startFrame = animation.start;
   transformation.translation.x =
     startFrame.translation.x +
-    t * (endFrame.translation.x - startFrame.translation.x);
+    interpolatedT * (endFrame.translation.x - startFrame.translation.x);
   transformation.translation.y =
     startFrame.translation.y +
-    t * (endFrame.translation.y - startFrame.translation.y);
+    interpolatedT * (endFrame.translation.y - startFrame.translation.y);
   transformation.translation.z =
     startFrame.translation.z +
-    t * (endFrame.translation.z - startFrame.translation.z);
+    interpolatedT * (endFrame.translation.z - startFrame.translation.z);
   transformation.rotation.x =
-    startFrame.rotation.x + t * (endFrame.rotation.x - startFrame.rotation.x);
+    startFrame.rotation.x +
+    interpolatedT * (endFrame.rotation.x - startFrame.rotation.x);
   transformation.rotation.y =
-    startFrame.rotation.y + t * (endFrame.rotation.y - startFrame.rotation.y);
+    startFrame.rotation.y +
+    interpolatedT * (endFrame.rotation.y - startFrame.rotation.y);
   transformation.rotation.z =
-    startFrame.rotation.z + t * (endFrame.rotation.z - startFrame.rotation.z);
+    startFrame.rotation.z +
+    interpolatedT * (endFrame.rotation.z - startFrame.rotation.z);
   transformation.scale =
-    startFrame.scale + t * (endFrame.scale - startFrame.scale);
+    startFrame.scale + interpolatedT * (endFrame.scale - startFrame.scale);
+}
+
+function interpolate(t: number, type: string): number {
+  switch (type) {
+    case "bezier":
+      return 3 * t * t - 2 * t * t * t;
+    case "easeIn":
+      return t * t;
+    case "linear":
+    default:
+      return t;
+  }
 }

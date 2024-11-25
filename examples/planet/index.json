@@ -23,7 +23,7 @@
         "ks": 0.1
       },
       "animation": {
-        "type": "rotation",
+        "type": "bezier",
         "duration": 20000,
         "start": {
           "scale": 1,
@@ -76,7 +76,7 @@
         }
       },
       "animation": {
-        "type": "rotation",
+        "type": "linear",
         "duration": 20000,
         "start": {
           "scale": 0.25,
