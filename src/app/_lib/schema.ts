@@ -14,6 +14,15 @@ const transformationSchema = z.object({
   scale: z.number(),
 });
 
+const animationSchema = z.object({
+  type: z.string(),
+  duration: z.number(),
+  start: transformationSchema,
+  end: transformationSchema,
+});
+
+export type AnimationSchema = z.infer<typeof animationSchema>;
+
 const materialSchema = z.object({
   texture: z.string(),
   ka: z.number(),
@@ -28,6 +37,7 @@ const objectSchema = z.object({
   transformation: transformationSchema,
   material: materialSchema,
   file: z.string(),
+  animation: animationSchema.optional(),
 });
 
 export type ObjectSchema = z.infer<typeof objectSchema>;

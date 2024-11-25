@@ -4,7 +4,7 @@ import ObjFileParser, {
   VertexTexture,
 } from "obj-file-parser";
 import { Transformation } from "@/app/_lib/types/Transformation.ts";
-import { ObjectSchema } from "@/app/_lib/schema.ts";
+import { AnimationSchema, ObjectSchema } from "@/app/_lib/schema.ts";
 
 export class Material {
   ka: number;
@@ -43,6 +43,7 @@ export default class Mesh {
   name: string;
   transformation: Transformation;
   faces: Face[];
+  animation?: AnimationSchema;
 
   constructor(
     model: ObjModel,
@@ -56,6 +57,7 @@ export default class Mesh {
     material.texture = texture;
 
     this.name = objectSchema.name;
+    this.animation = objectSchema.animation;
     this.transformation = objectSchema.transformation;
     this.faces = model.faces.map((face) => {
       return this.mapFace(face, model, material);

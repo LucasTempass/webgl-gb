@@ -8,6 +8,8 @@ import { mat4 } from "gl-matrix";
 import Camera from "@/app/_lib/camera.ts";
 import Mesh from "@/app/_lib/mesh.ts";
 import { onKeyDown as onKeyDownFn } from "@/app/_lib/handlers.ts";
+import { AnimationSchema } from "@/app/_lib/schema.ts";
+import { applyAnimation } from "@/app/_lib/applyAnimation.ts";
 
 interface CanvasProps {
   meshes: Mesh[];
@@ -157,19 +159,12 @@ export default function Canvas({
     meshes.forEach((mesh, index) => {
       const transformation = mesh.transformation;
 
-      if (index === 1) {
-        // Primeiro objeto segue uma trajetória paramétrica (círculo no plano XY)
-        const t = performance.now() / 1000; // Tempo em segundos
-        const radius = 5; // Raio da curva
-        transformation.translation.x = radius * Math.cos(t); // Posição X varia com o cosseno
-        transformation.translation.y = radius * Math.sin(t); // Posição Y varia com o seno
-        transformation.translation.z = 0; // Mantém Z fixo
-      } else {
-        // Outros objetos rotacionam
-        transformation.rotation.x += 0.01;
-        transformation.rotation.y += 0.01;
+      const animation: AnimationSchema | undefined = mesh.animation;
+
+      if (animation) {
+        applyAnimation(animation, transformation);
       }
-    
+
       // Criação da matriz de modelo (transformação)
       const model = mat4.create();
       mat4.translate(model, model, [
